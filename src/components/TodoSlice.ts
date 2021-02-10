@@ -1,5 +1,7 @@
+import {
+  ActionCreatorWithoutPayload, createSlice
+} from "@reduxjs/toolkit";
 import { axiosInstance } from './../config';
-import { ActionCreatorWithoutPayload, createSlice } from "@reduxjs/toolkit";
 
 export const TodoSlice = createSlice({
   name: 'TodoSlice',
@@ -32,7 +34,18 @@ export const TodoSlice = createSlice({
         isLoading: false,
         success: true,
         error: false,
-        data: action.payload
+        meta: action.payload.meta,
+        data: action.payload.items
+      };
+    },
+    todosMoreSuccess: (state, action) => {
+      state.todos = {
+        ...state.todos,
+        isLoading: false,
+        success: true,
+        error: false,
+        meta: action.payload.meta,
+        data: [...state.todos.data, ...action.payload.items]
       };
     },
     todosRequest: (state) => {
@@ -117,19 +130,33 @@ export const TodoSlice = createSlice({
   }
 });
 export const {
-  todosSuccess, todosRequest, todosError,
+  todosSuccess, todosRequest, todosError, todosMoreSuccess,
   todoRequest, todoSuccess, todoError,
   createTodoRequest, createTodoSuccess, createTodoError, clearCreateTodo,
   showError
 } = TodoSlice.actions;
 
-export const fetchTodos = () => (
+export const fetchTodos = (page: number) => (
   dispatch: (arg0: ActionCreatorWithoutPayload<string>) => void
 ) => {
   dispatch(todosRequest);
-  axiosInstance.get('/tasks?page=1&limit=5')
+  axiosInstance.get(`/tasks?page=${page}&limit=5`)
     .then((res) => {
       dispatch(todosSuccess(res.data));
+      dispatch(showError(""));
+    })
+    .catch((e) => {
+      dispatch(todosError());
+      dispatch(showError(e.response.status));
+    });
+};
+export const fetchMoreTodos = (page: number) => (
+  dispatch: (arg0: ActionCreatorWithoutPayload<string>) => void
+) => {
+  dispatch(todosRequest);
+  axiosInstance.get(`/tasks?page=${page}&limit=5`)
+    .then((res) => {
+      dispatch(todosMoreSuccess(res.data));
       dispatch(showError(""));
     })
     .catch((e) => {

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import {
-  Image, StatusBar, StyleSheet, Text, View
+  FlatList,
+  Image, StatusBar, StyleSheet, Text, View, ActivityIndicator
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -8,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { assets } from '../../assets';
 import { colors, gradientColors } from '../../baseColor';
 import TodoListItem from './TodoListItem';
-import { fetchTodos } from '../TodoSlice';
+import { fetchTodos, fetchMoreTodos } from '../TodoSlice';
 
 const styles = StyleSheet.create({
   container: {
@@ -47,13 +48,15 @@ const styles = StyleSheet.create({
 const TodoList = ({ navigation }) => {
   const dispatch = useDispatch();
   const todos = useSelector(state => state.todo.todos.data);
+  const meta = useSelector(state => state.todo.todos.meta);
+  const isLoading = useSelector(state => state.todo.todos.isLoading);
   useEffect(() => {
-    dispatch(fetchTodos());
+    dispatch(fetchTodos(1));
   }, []);
   const mapTodos = (): Array<Object> => {
-    if (todos.items && todos.items.length !== 0) {
+    if (todos && todos.length !== 0) {
       // sort array
-      const sorted = todos.items.slice().sort((a, b) => {
+      const sorted = todos.slice().sort((a, b) => {
         if (a.id < b.id) return -1;
         if (a.id > b.id) return 1;
         return 0;
@@ -71,21 +74,47 @@ const TodoList = ({ navigation }) => {
     }
     return [];
   };
+  const loadMore = () => {
+    let page = meta ? meta.currentPage : 1;
+    if (page < meta.totalPages) {
+      page += 1;
+      dispatch(fetchMoreTodos(page));
+    }
+  };
+  const renderFooter = () => {
+    if (meta && meta.currentPage === meta.totalPages) return null;
+    return (
+      <ActivityIndicator animating size="large" />
+    );
+  }
+  const onRefresh = () => {
+    dispatch(fetchTodos(1));
+  }
   const renderTodoItem = () => (
-    mapTodos().map((item, idx) => (
-      <View style={{ marginBottom: 30 }} key={item.id}>
-        <TodoListItem
-          gradient={gradientColors[idx % 2]}
-          complete={item.completed}
-          id={item.id}
-          title={item.title}
-          description={item.description}
-          deadline={item.deadline}
-          navigation={navigation}
-        />
-      </View>
-    ))
-  )
+    <FlatList
+      data={mapTodos()}
+      keyExtractor={item => item.id.toString()}
+      renderItem={({ item }) => (
+        <View style={{ marginBottom: 30 }} key={item.id}>
+          <TodoListItem
+            gradient={gradientColors[item.id % 2]}
+            complete={item.completed}
+            id={item.id}
+            title={item.title}
+            description={item.description}
+            deadline={item.deadline}
+            navigation={navigation}
+          />
+        </View>
+      )}
+      onEndReached={loadMore}
+      onEndReachedThreshold={0.2}
+      initialNumToRender={10}
+      ListFooterComponent={renderFooter}
+      onRefresh={onRefresh}
+      refreshing={isLoading}
+    />
+  );
   return (
     <View style={styles.container}>
       <SafeAreaView backgroundColor={colors.primary3} />
@@ -96,7 +125,7 @@ const TodoList = ({ navigation }) => {
       <View style={styles.topContainer}>
         <View>
           <Text style={styles.title}>ALL</Text>
-          <Text style={styles.subtitle}>15 tasks</Text>
+          <Text style={styles.subtitle}>{todos && todos.length ? todos.length : 0} tasks</Text>
         </View>
         <TouchableOpacity
           onPress={() => navigation.navigate('AddTodo')}
