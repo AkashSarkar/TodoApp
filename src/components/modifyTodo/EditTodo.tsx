@@ -2,16 +2,17 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity
 } from 'react-native';
+import CheckBox from '@react-native-community/checkbox';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   KeyboardAwareScrollView
 } from 'react-native-keyboard-aware-scroll-view';
+import { useFocusEffect } from '@react-navigation/native';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { colors } from '../../baseColor';
 import InputField from '../common/InputField';
 import Wrapper from '../common/Wrapper';
-import { createTodo, clearCreateTodo } from '../TodoSlice';
-import { useFocusEffect } from '@react-navigation/native';
+import { createTodo, clearUpdateTodo, updateTodo } from '../TodoSlice';
 
 const styles = StyleSheet.create({
   container: {
@@ -39,16 +40,19 @@ const styles = StyleSheet.create({
     fontWeight: '500'
   }
 });
-const AddTodo = ({ navigation }) => {
+const EditTodo = ({ navigation }) => {
   const dispatch = useDispatch();
+  // subscribe to store
+  const todoData = useSelector(state => state.todo.todo.data);
+  const updateTodoData = useSelector(state => state.todo.updateTodo);
+  // states
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
   const [isValidated, setIsValidated] = useState(false);
-  const [date, setDate] = useState(null);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [date, setDate] = useState(todoData.deadline || null);
+  const [title, setTitle] = useState(todoData.title || '');
+  const [description, setDescription] = useState(todoData.description || '');
+  const [completed, setCompleted] = useState(todoData.completed || false);
 
-  // subscribe to store
-  const createTodoData = useSelector(state => state.todo.createTodo);
   const showDatePicker = () => {
     setDatePickerVisibility(true);
   };
@@ -80,26 +84,23 @@ const AddTodo = ({ navigation }) => {
     const payload = {
       title,
       description,
-      deadline: date
-      // completed: false
+      deadline: date,
+      completed
     };
-    dispatch(createTodo(payload));
+    dispatch(updateTodo(todoData.id, payload));
   };
-  /**
-   * redirect if todo add success
-   */
   useEffect(() => {
-    if (createTodoData.success) {
+    if (updateTodoData.success) {
       navigation.navigate('ToDoList');
     }
-  }, [createTodoData]);
+  }, [updateTodoData]);
   /**
-   * clear side effect after leaving page
-   */
+     * clear side effect after leaving page
+     */
   useFocusEffect(
     useCallback(() => {
       return () => {
-        dispatch(clearCreateTodo());
+        dispatch(clearUpdateTodo());
       };
     }, [])
   );
@@ -107,7 +108,7 @@ const AddTodo = ({ navigation }) => {
     <Wrapper
       statusBarColor={colors.surface1}
       barStyle="dark-content"
-      headerTitle="Add Todo"
+      headerTitle="Edit Todo"
       goBack={() => navigation.goBack()}
     >
       <KeyboardAwareScrollView
@@ -186,13 +187,30 @@ const AddTodo = ({ navigation }) => {
             onCancel={hideDatePicker}
           />
         </View>
+        <View
+          style={{
+            marginBottom: 40,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
+          <View style={{ marginBottom: 10 }}>
+            <Text style={styles.label}>Completed</Text>
+          </View>
+          <CheckBox
+            disabled={false}
+            value={completed}
+            onValueChange={(newValue) => setCompleted(newValue)}
+          />
+        </View>
         <TouchableOpacity
           disabled={!isValidated}
           onPress={() => handleSubmit()}
         >
           <View style={[styles.submitBtn, { backgroundColor: isValidated ? colors.primary3 : '#D3A3F0' }]}>
             <Text style={styles.btnText}>
-              Create
+              Update
             </Text>
           </View>
         </TouchableOpacity>
@@ -200,4 +218,4 @@ const AddTodo = ({ navigation }) => {
     </Wrapper>
   );
 };
-export default AddTodo;
+export default EditTodo;

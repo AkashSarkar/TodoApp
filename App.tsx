@@ -4,7 +4,7 @@ import Toast from 'react-native-toast-message';
 import { Provider, useSelector } from 'react-redux';
 import AppNavigator from './src/routes';
 import store from './src/store';
-import RootContainer from './src/RootContainer';
+import RootContainer from './src/components/common/RootContainer';
 
 const App = () => {
 

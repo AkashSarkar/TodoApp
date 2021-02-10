@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
-import { errorMessages } from './util/enum';
+import { errorMessages } from '../../util/enum';
 
 const RootContainer = ({ children }) => {
   const errorMsg = useSelector(state => state.todo.errorMsg.code);

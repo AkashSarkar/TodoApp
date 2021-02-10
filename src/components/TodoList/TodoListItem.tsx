@@ -1,14 +1,20 @@
-import React, { FC, useEffect } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import {
-  Image, StyleSheet, Text, View
+  Image, StyleSheet, Text, View, Platform, LayoutAnimation, UIManager,
+  Alert
 } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import { useDispatch, useSelector } from 'react-redux';
 import { assets } from '../../assets';
 import { colors } from '../../baseColor';
-import { fetchTodo, updateTodo } from '../TodoSlice';
-
+import { deleteTodo, fetchTodo, updateTodo } from '../TodoSlice';
+if (
+  Platform.OS === 'android'
+  && UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 const styles = StyleSheet.create({
   wrapper: {
     width: '100%',
@@ -48,6 +54,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#A9ADB0',
     fontWeight: '500'
+  },
+  actionButtons: {
+    height: 30,
+    width: 80,
+    backgroundColor: colors.surface1,
+    borderRadius: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center'
   }
 });
 
@@ -63,9 +78,14 @@ const TodoListItem: FC<TodoItemProps> = ({
   gradient, complete, id, title, description, deadline, navigation
 }: TodoItemProps) => {
   const dispatch = useDispatch();
-  const todoData = useSelector(state => state.todo.todo);
+  // states
+  const [showActionBtns, setShowActionBtns] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [isDetails, setIsDetails] = useState(false);
+  const todoData = useSelector(state => state.todo.todo.success);
   const handleRedirect = () => {
     dispatch(fetchTodo(id));
+    setIsDetails(true);
   };
   const handleComplete = () => {
     const payload = {
@@ -76,11 +96,42 @@ const TodoListItem: FC<TodoItemProps> = ({
     };
     dispatch(updateTodo(id, payload));
   };
+  /**
+   * toggle action buttons
+   */
+  const toggleActionButtons = () => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        200,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity
+      )
+    );
+    setShowActionBtns(!showActionBtns);
+  };
+  /**
+   * get data todo
+   */
+  const handleUpdate = () => {
+    dispatch(fetchTodo(id));
+    setIsEdit(true);
+  };
+
+  /**
+   * delete todo
+   */
+  const handleDelete = () => {
+    dispatch(deleteTodo(id));
+  };
   useEffect(() => {
-    if (todoData.success) {
+    if (isEdit && todoData) {
+      setIsEdit(false);
+      navigation.navigate('EditTodo');
+    } else if (isDetails && todoData) {
+      setIsDetails(false);
       navigation.navigate('TodoDetails');
     }
-  }, [todoData]);
+  }, [todoData, isEdit, isDetails]);
   return (
     <LinearGradient
       start={{ x: 0, y: 0 }}
@@ -110,9 +161,39 @@ const TodoListItem: FC<TodoItemProps> = ({
           <Text style={styles.deadline}>{deadline}</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => toggleActionButtons()}
+      >
         <Image source={assets.info} style={{ height: 25, width: 25 }} />
       </TouchableOpacity>
+      {showActionBtns && (
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            onPress={() => {
+              Alert.alert(
+                'Delete Todo',
+                'Are you sure?',
+                [
+                  {
+                    text: 'Cancel',
+                    onPress: () => { },
+                    style: 'cancel'
+                  },
+                  { text: 'OK', onPress: () => handleDelete() }
+                ],
+                { cancelable: false }
+              );
+            }}
+          >
+            <Image source={assets.delete} style={{ height: 25, width: 25 }} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleUpdate()}
+          >
+            <Image source={assets.edit} style={{ height: 25, width: 25 }} />
+          </TouchableOpacity>
+        </View>
+      )}
     </LinearGradient>
   );
 };

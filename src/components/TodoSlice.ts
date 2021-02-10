@@ -23,6 +23,16 @@ export const TodoSlice = createSlice({
       success: false,
       error: false
     },
+    updateTodo: {
+      isLoading: false,
+      success: false,
+      error: false
+    },
+    deleteTodo: {
+      isLoading: false,
+      success: false,
+      error: false
+    },
     errorMsg: {
       code: ''
     }
@@ -121,6 +131,62 @@ export const TodoSlice = createSlice({
         error: false
       };
     },
+    updateTodoSuccess: (state) => {
+      state.updateTodo = {
+        ...state.updateTodo,
+        isLoading: false,
+        success: true,
+        error: false
+      };
+    },
+    updateTodoRequest: (state) => {
+      state.updateTodo = {
+        ...state.updateTodo,
+        isLoading: true,
+        success: false,
+        error: false
+      };
+    },
+    updateTodoError: (state) => {
+      state.updateTodo = {
+        ...state.updateTodo,
+        isLoading: false,
+        success: false,
+        error: true
+      };
+    },
+    clearUpdateTodo: (state) => {
+      state.updateTodo = {
+        ...state.updateTodo,
+        isLoading: false,
+        success: false,
+        error: false
+      };
+    },
+    deleteTodoSuccess: (state) => {
+      state.deleteTodo = {
+        ...state.deleteTodo,
+        isLoading: false,
+        success: true,
+        error: false
+      };
+    },
+    deleteTodoRequest: (state) => {
+      state.deleteTodo = {
+        ...state.deleteTodo,
+        isLoading: true,
+        success: false,
+        error: false
+      };
+    },
+    deleteTodoError: (state) => {
+      state.deleteTodo = {
+        ...state.deleteTodo,
+        isLoading: false,
+        success: false,
+        error: true
+      };
+    },
     showError: (state, action) => {
       state.errorMsg = {
         ...state.errorMsg,
@@ -133,6 +199,8 @@ export const {
   todosSuccess, todosRequest, todosError, todosMoreSuccess,
   todoRequest, todoSuccess, todoError,
   createTodoRequest, createTodoSuccess, createTodoError, clearCreateTodo,
+  updateTodoError, updateTodoRequest, updateTodoSuccess, clearUpdateTodo,
+  deleteTodoError, deleteTodoRequest, deleteTodoSuccess,
   showError
 } = TodoSlice.actions;
 
@@ -192,24 +260,44 @@ export const createTodo = (postData: createTodoData) => (
     .then((res) => {
       dispatch(showError(''));
       dispatch(createTodoSuccess());
-      dispatch(fetchTodos());
+      dispatch(fetchTodos(1));
     }).catch((e) => {
       dispatch(createTodoError());
       dispatch(showError(e.response.status));
     });
 };
-
-export const updateTodo = (id: number, postData: createTodoData) => (
+interface updateTodoData {
+  title: string,
+  description: string,
+  deadline: string | null,
+  completed: boolean
+}
+export const updateTodo = (id: number, postData: updateTodoData) => (
   dispatch: (arg0: ActionCreatorWithoutPayload<string>) => void
 ) => {
-  dispatch(createTodoRequest);
+  dispatch(updateTodoRequest);
   axiosInstance.put(`/tasks/${id}`, postData)
     .then((res) => {
       dispatch(showError(''));
-      dispatch(createTodoSuccess());
-      dispatch(fetchTodos());
+      dispatch(updateTodoSuccess());
+      dispatch(fetchTodos(1));
     }).catch((e) => {
-      dispatch(createTodoError());
+      dispatch(updateTodoError());
+      dispatch(showError(e.response.status));
+    });
+};
+
+export const deleteTodo = (id: number) => (
+  dispatch: (arg0: ActionCreatorWithoutPayload<string>) => void
+) => {
+  dispatch(deleteTodoRequest);
+  axiosInstance.delete(`/tasks/${id}`)
+    .then((res) => {
+      dispatch(showError(''));
+      dispatch(deleteTodoSuccess());
+      dispatch(fetchTodos(1));
+    }).catch((e) => {
+      dispatch(deleteTodoError());
       dispatch(showError(e.response.status));
     });
 };
