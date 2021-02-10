@@ -35,6 +35,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   btnText: {
+    width: 75,
     fontSize: 18,
     color: colors.surface1,
     fontWeight: '500'

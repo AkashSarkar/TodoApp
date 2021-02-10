@@ -1,13 +1,13 @@
 import React, { FC, useEffect, useState } from 'react';
 import {
   Image, StyleSheet, Text, View, Platform, LayoutAnimation, UIManager,
-  Alert
+  Alert, TouchableOpacity
 } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import { useDispatch, useSelector } from 'react-redux';
 import { assets } from '../../assets';
 import { colors } from '../../baseColor';
+import { truncate } from '../../util';
 import { deleteTodo, fetchTodo, updateTodo } from '../TodoSlice';
 if (
   Platform.OS === 'android'
@@ -157,7 +157,7 @@ const TodoListItem: FC<TodoItemProps> = ({
           onPress={() => handleRedirect()}
         >
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.description}>{description}</Text>
+          <Text style={styles.description}>{truncate(description, 22)}</Text>
           <Text style={styles.deadline}>{deadline}</Text>
         </TouchableOpacity>
       </View>

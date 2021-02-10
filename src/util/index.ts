@@ -19,7 +19,16 @@ const validate = (validation: Array<validationObj>, value: String) => {
   }
   return false;
 };
-
+/**
+ * truncates a string after given length
+ * @param {string} str
+ * @param {number} length
+ * @return {string|*}
+ */
+const truncate = (str: string, length = 10) => {
+  if (str.length <= length) return str;
+  return `${str.slice(0, length)}...`;
+};
 export {
-  validate
+  validate, truncate
 };

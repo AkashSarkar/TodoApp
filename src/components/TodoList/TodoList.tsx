@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import {
   FlatList,
-  Image, StatusBar, StyleSheet, Text, View, ActivityIndicator
+  Image, StatusBar, StyleSheet, Text, View, ActivityIndicator,
+  TouchableOpacity
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { assets } from '../../assets';
 import { colors, gradientColors } from '../../baseColor';
@@ -130,7 +130,9 @@ const TodoList = ({ navigation }) => {
         <TouchableOpacity
           onPress={() => navigation.navigate('AddTodo')}
         >
-          <Image source={assets.add} style={{ height: 40, width: 40 }} />
+          <View>
+            <Image source={assets.add} style={{ height: 40, width: 40 }} />
+          </View>
         </TouchableOpacity>
       </View>
       <View style={styles.bottomContainer}>

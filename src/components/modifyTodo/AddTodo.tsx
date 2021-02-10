@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   btnText: {
+    width: 75,
     fontSize: 18,
     color: colors.surface1,
     fontWeight: '500'
@@ -189,6 +190,7 @@ const AddTodo = ({ navigation }) => {
         <TouchableOpacity
           disabled={!isValidated}
           onPress={() => handleSubmit()}
+          style={{ width: '100%' }}
         >
           <View style={[styles.submitBtn, { backgroundColor: isValidated ? colors.primary3 : '#D3A3F0' }]}>
             <Text style={styles.btnText}>
