@@ -7,7 +7,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useDispatch, useSelector } from 'react-redux';
 import { assets } from '../../assets';
 import { colors } from '../../baseColor';
-import { fetchTodo } from '../TodoSlice';
+import { fetchTodo, updateTodo } from '../TodoSlice';
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -67,7 +67,15 @@ const TodoListItem: FC<TodoItemProps> = ({
   const handleRedirect = () => {
     dispatch(fetchTodo(id));
   };
-
+  const handleComplete = () => {
+    const payload = {
+      title,
+      description,
+      deadline,
+      completed: !complete
+    };
+    dispatch(updateTodo(id, payload));
+  };
   useEffect(() => {
     if (todoData.success) {
       navigation.navigate('TodoDetails');
@@ -81,7 +89,9 @@ const TodoListItem: FC<TodoItemProps> = ({
       style={styles.wrapper}
     >
       <View style={styles.leftWrapper}>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => handleComplete()}
+        >
           {complete ?
             (
               <Image source={assets.complete} style={{ height: 25, width: 25 }} />
@@ -92,7 +102,7 @@ const TodoListItem: FC<TodoItemProps> = ({
             )}
         </TouchableOpacity>
         <TouchableOpacity
-          style={{ marginLeft: 10 }}
+          style={{ marginLeft: 20 }}
           onPress={() => handleRedirect()}
         >
           <Text style={styles.title}>{title}</Text>

@@ -51,8 +51,15 @@ const TodoList = ({ navigation }) => {
     dispatch(fetchTodos());
   }, []);
   const mapTodos = (): Array<Object> => {
-    if (todos.length !== 0) {
-      return todos.items.map((item) => (
+    if (todos.items && todos.items.length !== 0) {
+      // sort array
+      const sorted = todos.items.slice().sort((a, b) => {
+        if (a.id < b.id) return -1;
+        if (a.id > b.id) return 1;
+        return 0;
+      });
+      // map the sorted array
+      return sorted.map((item) => (
         {
           id: item.id,
           title: item.title,
@@ -66,7 +73,7 @@ const TodoList = ({ navigation }) => {
   };
   const renderTodoItem = () => (
     mapTodos().map((item, idx) => (
-      <View style={{ marginBottom: 30 }}>
+      <View style={{ marginBottom: 30 }} key={item.id}>
         <TodoListItem
           gradient={gradientColors[idx % 2]}
           complete={item.completed}

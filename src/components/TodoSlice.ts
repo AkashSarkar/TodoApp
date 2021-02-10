@@ -172,4 +172,19 @@ export const createTodo = (postData: createTodoData) => (
     });
 };
 
+export const updateTodo = (id: number, postData: createTodoData) => (
+  dispatch: (arg0: ActionCreatorWithoutPayload<string>) => void
+) => {
+  dispatch(createTodoRequest);
+  axiosInstance.put(`/tasks/${id}`, postData)
+    .then((res) => {
+      dispatch(showError(''));
+      dispatch(createTodoSuccess());
+      dispatch(fetchTodos());
+    }).catch((e) => {
+      dispatch(createTodoError());
+      dispatch(showError(e.response.status));
+    });
+};
+
 export default TodoSlice.reducer;
